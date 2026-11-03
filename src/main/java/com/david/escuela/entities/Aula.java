@@ -1,5 +1,7 @@
 package com.david.escuela.entities;
 
+import com.david.escuela.utils.StringCustomUtils;
+import com.david.escuela.utils.ValoresNumericosUtils;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,5 +28,27 @@ public class Aula {
 
     @Column(name = "CAPACIDAD", nullable = false)
     private Integer capacidad;
+
+    private static void validarDatos(String nombre, Integer capacidad){
+        StringCustomUtils.validarTamanio(nombre,8,100,
+                "El nombre es requerido y debe tener entre 8 y 100 caracteres");
+
+        ValoresNumericosUtils.validarEnteroPositivo(capacidad, "La capacidad debe ser un entero positivo");
+    }
+
+    public void actualizar(String nombre, Integer capacidad){
+        validarDatos(nombre,capacidad);
+        this.nombre=nombre;
+        this.capacidad=capacidad;
+    }
+
+    public static Aula crear(String nombre,Integer capacidad){
+        validarDatos(nombre,capacidad);
+
+        return Aula.builder()
+                .nombre(nombre)
+                .capacidad(capacidad)
+                .build();
+    }
 
 }

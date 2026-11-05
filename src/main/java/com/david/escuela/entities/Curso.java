@@ -35,8 +35,8 @@ public class Curso {
     private Integer creditos;
 
     public static void validarDatos(String nombre, Integer creditos ){
-        StringCustomUtils.validarTamanio(nombre,10,100,"El nombre del curso debe estar entre 10 y 100 caracteres y es requerido.");
-        ValoresNumericosUtils.validarEnteroPositivo(creditos,"Debe tener al menos un crédito");
+        StringCustomUtils.validarTamanio(nombre,1,100,"El nombre del curso debe estar entre 1 y 100 caracteres y es requerido.");
+        ValoresNumericosUtils.validarEnteroPositivoConLimite(creditos,99,"Debe tener al menos 1 crédito y no más de 99");
     }
 
     public void actualizar(String nombre, String descripcion,Integer creditos){

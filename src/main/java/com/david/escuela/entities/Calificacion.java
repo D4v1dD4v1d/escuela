@@ -35,25 +35,29 @@ public class Calificacion {
     @JoinColumn(name = "ID_INSCRIPCION", nullable = false, unique = true)
     private Inscripcion inscripcion;
 
-    public static void  validarDatos(BigDecimal calificacion,Inscripcion inscripcion){
+    public static void  validarDatos(BigDecimal calificacion){
         ValoresNumericosUtils.validarBigDecimalPositivo(calificacion,"La calificación es requerida y debe ser positiva");
-        if(inscripcion==null)
-            throw new DatoInvalidoException("La inscripción es requerida.");
+
     }
 
     public void actualizar(BigDecimal calificacion,Inscripcion inscripcion){
-        validarDatos(calificacion,inscripcion);
+        validarDatos(calificacion);
 
         this.calificacion= calificacion;
         this.inscripcion=inscripcion;
     }
 
-    public static Calificacion crear(BigDecimal calificacion, Inscripcion inscripcion){
-        validarDatos(calificacion,inscripcion);
+    public void asignarInscripcion(Inscripcion inscripcion){
+        this.inscripcion=inscripcion;
+    }
+
+
+
+    public static Calificacion crear(BigDecimal calificacion ){
+        validarDatos(calificacion);
 
         return Calificacion.builder()
                 .calificacion(calificacion)
-                .inscripcion(inscripcion)
                 .build();
     }
 }

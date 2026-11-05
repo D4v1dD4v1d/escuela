@@ -1,6 +1,7 @@
 package com.david.escuela.controllers;
 
 import com.david.escuela.docs.ProblemaDoc;
+import com.david.escuela.exceptions.DatoInvalidoException;
 import com.david.escuela.services.CrudService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -41,6 +42,7 @@ public class CrudController<RQ, RS, S extends CrudService<RQ,RS>> {
             @PathVariable @Positive(message = "El id debe ser positivo")
             Long id
     ){
+        validarIdNotNullPositive(id);
         return ResponseEntity.ok(service.obtenerPorId(id));
     }
 
@@ -71,6 +73,7 @@ public class CrudController<RQ, RS, S extends CrudService<RQ,RS>> {
             @PathVariable @Positive(message = "El id debe ser positivo.") Long id
 
     ){
+        validarIdNotNullPositive(id);
         return ResponseEntity.ok(service.actualizar(request,id));
     }
     @DeleteMapping("/{id}")
@@ -83,8 +86,14 @@ public class CrudController<RQ, RS, S extends CrudService<RQ,RS>> {
             content = @Content(mediaType = "application/problem+json",
                     schema = @Schema(implementation = ProblemaDoc.class)))
     public ResponseEntity eliminar(@PathVariable Long id){
+        validarIdNotNullPositive(id);
         service.eliminar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    public static void validarIdNotNullPositive(Long id){
+        if (id == null) throw new DatoInvalidoException("El id no puede ser null.");
+        if (id < 0) throw new DatoInvalidoException("El id es un entero positivo");
     }
 
 }

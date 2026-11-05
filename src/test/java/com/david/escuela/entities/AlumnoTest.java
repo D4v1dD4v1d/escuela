@@ -12,18 +12,20 @@ public class AlumnoTest {
     @Test
     void actualizar_debeModificarDatos_cuandoTodoEsValido(){
         //arrange
-        Alumno alumno = Alumno.builder()
-                .nombre("David")
-                .apellidoPaterno("Pérez")
-                .apellidoMaterno("Zavala")
-                .email("david@david.com")
-                .build();
+        Alumno alumno = Alumno.crear(
+                "David",
+                "Pérez",
+                "Zavala"
+        );
+
         //act
         alumno.actualizar(
                 "nombre",
                 "paterno",
                 "materno",
-                "test@test");
+                "test@test",
+                "DAPZZV2105"
+                );
         //assert
         assertThat(alumno.getNombre()).isEqualTo("nombre");
         assertThat(alumno.getApellidoPaterno()).isEqualTo("paterno");
@@ -42,7 +44,7 @@ public class AlumnoTest {
 
         //act y assert
         assertThatThrownBy(() -> alumno.actualizar(
-                null, "paterno","materno", "test@test.com"))
+                null, "paterno","materno", "test@test.com",""))
                 .isInstanceOf(DatoInvalidoException.class)
                 .hasMessageContaining("El nombre es requerido");
     }
@@ -91,5 +93,16 @@ public class AlumnoTest {
         assertThatThrownBy(()->Alumno.crear(null,"Pérez","Zavala"))
                 .isInstanceOf(DatoInvalidoException.class)
                 .hasMessageContaining("El nombre es requerido");    }
+    //validar datos
+    @Test
+    void validarDatos_SiLosDatosSonValidos_NoHaceNada(){
+        Alumno.crear("Juan", "Pérez", "Gómez");
+    }
 
+    @Test
+    void validarDatos_DebeLanzarExcepcion_SiElNombreEsPequeño(){
+        assertThatThrownBy(() -> Alumno.crear("", "Pérez", "Gómez"))
+                .isInstanceOf(DatoInvalidoException.class)
+                .hasMessage("El nombre es requerido y debe tener entre 1 y 50 caracteres");
+    }
 }

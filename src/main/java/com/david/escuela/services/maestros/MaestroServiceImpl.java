@@ -5,7 +5,6 @@ import com.david.escuela.dto.maestros.MaestroResponse;
 import com.david.escuela.entities.Maestro;
 import com.david.escuela.exceptions.ConflictoException;
 import com.david.escuela.exceptions.EntidadRelacionada;
-import com.david.escuela.exceptions.RecursoNoEncontradoException;
 import com.david.escuela.mappers.MaestroMapper;
 import com.david.escuela.repositories.GrupoReposiroty;
 import com.david.escuela.repositories.MaestroRepository;
@@ -136,7 +135,7 @@ public class MaestroServiceImpl implements MaestroService{
 
 
     private Maestro obtenerMaestro(Long id){
-        log.info("Obteniendo Maestro {}",id);
+        log.info("Obteniendo maestro {}...",id);
         return ServiceUtils.obtenerEntidadOException(maestroRepository,id,Maestro.class);
     }
 }

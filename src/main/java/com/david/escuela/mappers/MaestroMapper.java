@@ -1,6 +1,7 @@
 package com.david.escuela.mappers;
 
 import com.david.escuela.dto.datos.DatosCurso;
+import com.david.escuela.dto.datos.DatosMaestro;
 import com.david.escuela.dto.maestros.MaestroRequest;
 import com.david.escuela.dto.maestros.MaestroResponse;
 import com.david.escuela.entities.Grupo;
@@ -48,5 +49,14 @@ public class MaestroMapper implements CommonMapper<MaestroRequest, Maestro, Maes
                 .map(Grupo::getCurso)
                 .map(cursoMapper::entidadADatos)
                 .toList();
+    }
+
+    public DatosMaestro entidadADatos(Maestro entidad){
+        return entidad == null
+                ? null
+                : new DatosMaestro(
+                        entidad.obtenerNombreCompleto(),
+                        entidad.getEmail(),
+                        entidad.getTelefono());
     }
 }

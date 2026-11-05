@@ -1,5 +1,6 @@
 package com.david.escuela.entities;
 
+import com.david.escuela.exceptions.DatoInvalidoException;
 import com.david.escuela.utils.StringCustomUtils;
 import com.david.escuela.utils.ValoresNumericosUtils;
 import jakarta.persistence.*;
@@ -25,15 +26,17 @@ public class Aula {
 
     @Column(name = "NOMBRE", nullable = false,length = 100, unique = true)
     private String nombre;
-
+    //La capacidad no puede ser mayor de 40
     @Column(name = "CAPACIDAD", nullable = false)
     private Integer capacidad;
 
     private static void validarDatos(String nombre, Integer capacidad){
         StringCustomUtils.validarTamanio(nombre,8,100,
                 "El nombre es requerido y debe tener entre 8 y 100 caracteres");
+        if(capacidad>40||capacidad<1)
+            throw new DatoInvalidoException("La capacidad debe ser un entero positivo entre 1 y 40");
+        ValoresNumericosUtils.validarEnteroPositivoConLimite(capacidad,40 ,"La capacidad debe ser un entero positivo");
 
-        ValoresNumericosUtils.validarEnteroPositivo(capacidad, "La capacidad debe ser un entero positivo");
     }
 
     public void actualizar(String nombre, Integer capacidad){

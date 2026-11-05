@@ -45,31 +45,29 @@ public class Inscripcion {
         this.alumno=alumno;
     }
 
-    public static void validarDatos(Alumno alumno,Grupo grupo, Calificacion calificacion){
+    public static void validarDatos(Alumno alumno,Grupo grupo){
         if(alumno==null)
             throw new DatoInvalidoException("El alumno es requerido.");
         if(grupo==null)
             throw new DatoInvalidoException("El grupo es requerido.");
-        if(calificacion==null)
-            throw new DatoInvalidoException("La calificación es requerida.");
     }
 
-    public void actualizar(Alumno alumno, Grupo grupo, Calificacion calificacion){
-        validarDatos(alumno,grupo,calificacion);
+    public void actualizar(Alumno alumno, Grupo grupo){
+        validarDatos(alumno,grupo);
 
         this.alumno = alumno;
         this.grupo = grupo;
-        this.calificacion = calificacion;
-
     }
 
-    public static Inscripcion crear(Alumno alumno, Grupo grupo, Calificacion calificacion){
-        validarDatos(alumno,grupo,calificacion);
+    public void asignarAlumnoGrupo(Alumno alumno, Grupo grupo){
+        this.alumno = alumno;
+        this.grupo = grupo;
+    }
+
+
+    public static Inscripcion crear(){
 
         return Inscripcion.builder()
-                .alumno(alumno)
-                .grupo(grupo)
-                .calificacion(calificacion)
                 .build();
 
     }

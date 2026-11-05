@@ -17,6 +17,9 @@ public record AlumnoResponse(
         @Schema(description = "Email del alumno", example = "test@test.com")
         String email,
 
+        @Schema(description = "Matrícula del alumno", example = "test@test.com")
+        String matricula,
+
         @Schema(description = "Fecha de ingreso", example = "10/01/2025")
         String fechaRegistro,
 

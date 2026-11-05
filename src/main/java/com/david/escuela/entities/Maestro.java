@@ -64,6 +64,13 @@ public class Maestro {
         this.email=email.toLowerCase().trim();
     }
 
+    public String obtenerNombreCompleto(){
+        return String.join(" ",
+                this.getNombre(),
+                this.getApellidoPaterno(),
+                this.getApellidoMaterno());
+    }
+
     public static Maestro crear(String nombre, String apellidoPaterno, String apellidoMaterno, String email, String telefono){
         validarDatos(nombre,apellidoPaterno,apellidoMaterno,email,telefono);
 

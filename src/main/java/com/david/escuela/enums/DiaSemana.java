@@ -23,9 +23,9 @@ public enum DiaSemana {
         String descripcionNormalizada = StringCustomUtils.normalizarTexto(descripcion);
 
         for (DiaSemana diaSemana :values()){
-            if(StringCustomUtils.normalizarTexto(diaSemana.descipcion).equalsIgnoreCase(descripcion))
+            if(StringCustomUtils.normalizarTexto(diaSemana.descipcion).equalsIgnoreCase(descripcionNormalizada))
                 return diaSemana;
         }
-        throw new RecursoNoEncontradoException("No existe un dìa de la semana con la descripción: "+ descripcion);
+        throw new RecursoNoEncontradoException("No existe un día de la semana con la descripción: "+ descripcion);
     }
 }

@@ -1,5 +1,7 @@
 package com.david.escuela.entities;
 
+import com.david.escuela.exceptions.DatoInvalidoException;
+import com.david.escuela.utils.StringCustomUtils;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,5 +38,39 @@ public class Inscripcion {
 
     @OneToOne(mappedBy = "inscripcion")
     private Calificacion calificacion;
+
+    public void inscribirAlumno(Alumno alumno){
+        if (alumno==null)
+            throw new DatoInvalidoException("El alumno es requerido.");
+        this.alumno=alumno;
+    }
+
+    public static void validarDatos(Alumno alumno,Grupo grupo){
+        if(alumno==null)
+            throw new DatoInvalidoException("El alumno es requerido.");
+        if(grupo==null)
+            throw new DatoInvalidoException("El grupo es requerido.");
+    }
+
+    public void actualizar(Alumno alumno, Grupo grupo){
+        validarDatos(alumno,grupo);
+
+        this.alumno = alumno;
+        this.grupo = grupo;
+    }
+
+    public void asignarAlumnoGrupo(Alumno alumno, Grupo grupo){
+        this.alumno = alumno;
+        this.grupo = grupo;
+    }
+
+
+    public static Inscripcion crear(){
+
+        return Inscripcion.builder()
+                .build();
+
+    }
+
 
 }

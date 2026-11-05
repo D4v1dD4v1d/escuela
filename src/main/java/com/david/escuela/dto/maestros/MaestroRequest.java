@@ -30,8 +30,8 @@ public record MaestroRequest(
         @Email(message = "El email debe tener el formato válido (ejemplo@dominio.com)")
         String email,
 
-        @Schema(description = "Tel[efono del maestro", example = "1234567890")
-        @NotBlank(message = "El t[elefono es requerido")
+        @Schema(description = "Teléfono del maestro", example = "1234567890")
+        @NotBlank(message = "El télefono es requerido")
         @Pattern(regexp = "^[0-9]{10}",message = "El télefono debe tener exactamente 10 dígitos númericos")
         String telefono
 ) {}

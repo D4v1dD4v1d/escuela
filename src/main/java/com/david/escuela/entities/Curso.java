@@ -1,6 +1,10 @@
 package com.david.escuela.entities;
 
+import com.david.escuela.utils.StringCustomUtils;
+import com.david.escuela.utils.ValoresNumericosUtils;
+import com.sun.source.doctree.SeeTree;
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,4 +34,26 @@ public class Curso {
     @Column(name = "CREDITOS", nullable = false)
     private Integer creditos;
 
+    public static void validarDatos(String nombre, Integer creditos ){
+        StringCustomUtils.validarTamanio(nombre,1,100,"El nombre del curso debe estar entre 1 y 100 caracteres y es requerido.");
+        ValoresNumericosUtils.validarEnteroPositivoConLimite(creditos,99,"Debe tener al menos 1 crédito y no más de 99");
+    }
+
+    public void actualizar(String nombre, String descripcion,Integer creditos){
+        validarDatos(nombre,creditos);
+
+        this.nombre=nombre;
+        this.descripcion=descripcion;
+        this.creditos=creditos;
+    }
+
+    public static Curso crear(String nombre, String descripcion, Integer creditos){
+        validarDatos(nombre,creditos);
+
+        return Curso.builder()
+                .nombre(nombre)
+                .descripcion(descripcion)
+                .creditos(creditos)
+                .build();
+    }
 }

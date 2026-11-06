@@ -14,15 +14,31 @@ public interface HorarioRepository extends JpaRepository<Horario,Long> {
     boolean existsByGrupoId(Long Id);
     // para registrar
     @Query(value = """
-        SELECT h.HORA_INICIO || ' - ' || h.HORA_FIN 
-        FROM ESCUELA.HORARIOS h 
-        INNER JOIN ESCUELA.GRUPOS g ON h.ID_GRUPO = g.ID_GRUPO 
-        WHERE (:idGrupo IS NULL OR g.ID_GRUPO = :idGrupo)
-          AND (:idAula IS NULL OR g.ID_AULA = :idAula)
-          AND (:dia IS NULL OR UPPER(TRIM(h.DIA)) = UPPER(TRIM(:dia)))
-          AND (:periodo IS NULL OR g.PERIODO = :periodo)
-          AND (:inicio IS NULL AND :fin IS NULL OR (TRIM(h.HORA_INICIO) < :fin AND TRIM(h.HORA_FIN) > :inicio))
-        """, nativeQuery = true)
+    SELECT 'CONFLICTO: El grupo ya tiene un horario asignado en ese intervalo.'
+    FROM GRUPOS G
+    INNER JOIN HORARIOS H
+        ON G.ID_GRUPO = H.ID_GRUPO
+    WHERE
+        G.ID_GRUPO = :idGrupo
+        AND G.PERIODO = :periodo
+        AND UPPER(TRIM(H.DIA)) = UPPER(TRIM(:dia))
+        AND H.HORA_INICIO < :fin
+        AND H.HORA_FIN > :inicio
+
+    UNION ALL
+
+    SELECT 'CONFLICTO: El aula ya está ocupada en ese intervalo.'
+    FROM GRUPOS G
+    INNER JOIN HORARIOS H
+        ON G.ID_GRUPO = H.ID_GRUPO
+    WHERE
+        G.ID_AULA = :idAula
+        AND G.PERIODO = :periodo
+        AND G.ID_GRUPO <> :idGrupo
+        AND UPPER(TRIM(H.DIA)) = UPPER(TRIM(:dia))
+        AND H.HORA_INICIO < :fin
+        AND H.HORA_FIN > :inicio
+    """, nativeQuery = true)
     List<String> buscarHorariosFormateados(
             @Param("inicio") String inicio,
             @Param("fin") String fin,
@@ -31,18 +47,37 @@ public interface HorarioRepository extends JpaRepository<Horario,Long> {
             @Param("idAula") Long idAula,
             @Param("periodo") String periodo
     );
+
+
+
     //para actualizar
     @Query(value = """
-        SELECT h.HORA_INICIO || ' - ' || h.HORA_FIN 
-        FROM ESCUELA.HORARIOS h 
-        INNER JOIN ESCUELA.GRUPOS g ON h.ID_GRUPO = g.ID_GRUPO 
-        WHERE (:idGrupo IS NULL OR g.ID_GRUPO = :idGrupo)
-          AND (:idAula IS NULL OR g.ID_AULA = :idAula)
-          AND (:idHorario IS NULL OR h.ID_HORARIO <> :idHorario)
-          AND (:dia IS NULL OR UPPER(TRIM(h.DIA)) = UPPER(TRIM(:dia)))
-          AND (:periodo IS NULL OR g.PERIODO = :periodo)
-          AND (:inicio IS NULL AND :fin IS NULL OR (h.HORA_INICIO < :fin AND h.HORA_FIN > :inicio))
-        """, nativeQuery = true)
+    SELECT 'CONFLICTO: El grupo ya tiene un horario asignado en ese intervalo.'
+    FROM GRUPOS G
+    INNER JOIN HORARIOS H
+        ON G.ID_GRUPO = H.ID_GRUPO
+    WHERE
+        G.ID_GRUPO = :idGrupo
+        AND G.PERIODO = :periodo
+        AND UPPER(TRIM(H.DIA)) = UPPER(TRIM(:dia))
+        AND H.ID_HORARIO <> :idHorario
+        AND H.HORA_INICIO < :fin
+        AND H.HORA_FIN > :inicio
+
+    UNION ALL
+
+    SELECT 'CONFLICTO: El aula ya está ocupada en ese intervalo.'
+    FROM GRUPOS G
+    INNER JOIN HORARIOS H
+        ON G.ID_GRUPO = H.ID_GRUPO
+    WHERE
+        G.ID_AULA = :idAula
+        AND G.PERIODO = :periodo
+        AND H.ID_HORARIO <> :idHorario
+        AND UPPER(TRIM(H.DIA)) = UPPER(TRIM(:dia))
+        AND H.HORA_INICIO < :fin
+        AND H.HORA_FIN > :inicio
+    """, nativeQuery = true)
     List<String> buscarHorariosFormateados(
             @Param("inicio") String inicio,
             @Param("fin") String fin,

@@ -60,7 +60,7 @@ public class HorarioServiceImpl implements HorarioService{
                 request.idGrupo(),
                 grupo.getAula().getId(),
                 grupo.getPeriodo());
-
+        log.info("Resultado: {}",lista.size());
 
         if (!lista.isEmpty())
             throw new ConflictoException("Ese horario ya esta ocupado, seleccione otro.");
@@ -90,14 +90,17 @@ public class HorarioServiceImpl implements HorarioService{
         Grupo grupo = grupoReposiroty.findById(request.idGrupo()).
                 orElseThrow(() ->new ConflictoException("El Grupo con id: "+ request.idGrupo()+" no existe."));
 
-        List <String> lista = horarioRepository.buscarHorariosFormateados(
+        List<String> lista = horarioRepository.buscarHorariosFormateados(
                 request.horaInicio(),
                 request.horaFin(),
                 request.idGrupo(),
                 grupo.getAula().getId(),
                 id,
                 grupo.getPeriodo(),
-                request.dia());
+                request.dia()
+
+        );
+
 
         if (!lista.isEmpty())
             throw new ConflictoException("Ese horario ya esta ocupado, seleccione otro.");

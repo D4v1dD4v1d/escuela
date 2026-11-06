@@ -50,27 +50,21 @@ public class GrupoServiceImpl implements GrupoService{
 
     @Override
     public GrupoResponse registrar(GrupoRequest request) {
+        Curso curso = ServiceUtils.obtenerEntidadOException(cursoRepository,request.idCurso(),Curso.class);
+        Maestro maestro = ServiceUtils.obtenerEntidadOException(maestroRepository,request.idMaestro(),Maestro.class);
+        Aula aula = ServiceUtils.obtenerEntidadOException(aulaRepository,request.idAula(),Aula.class);
 
         validarFormatoPeriodo(request.periodo());
 
-
         log.info("Registrando Grupo...");
-        if (grupoRepository.existsByCursoIdAndMaestroIdAndAulaIdAndPeriodo(
-                request.idCurso(),
-                request.idMaestro(),
-                request.idAula(),
-                request.periodo()
-        ))
-            throw new ConflictoException("Ya existe un grupo con la relación " +
-                    "combinación [Curso + Maestro + Aula + Periodo] y no puede haber " +
-                    "2 iguales.");
 
+        validarDatosUnicos(request);
 
         Grupo grupo = grupoMapper.requestAEntidad(
                 request,
-                ServiceUtils.obtenerEntidadOException(cursoRepository, request.idCurso(), Curso.class),
-                ServiceUtils.obtenerEntidadOException(maestroRepository, request.idMaestro(), Maestro.class),
-                ServiceUtils.obtenerEntidadOException(aulaRepository, request.idAula(), Aula.class));
+                curso,
+                maestro,
+                aula);
 
         grupoRepository.saveAndFlush(grupo);
 
@@ -84,24 +78,20 @@ public class GrupoServiceImpl implements GrupoService{
     public GrupoResponse actualizar(GrupoRequest request, Long id) {
         Grupo grupo =obtenerGrupo(id);
 
+        Curso curso = ServiceUtils.obtenerEntidadOException(cursoRepository,request.idCurso(),Curso.class);
+        Maestro maestro = ServiceUtils.obtenerEntidadOException(maestroRepository,request.idMaestro(),Maestro.class);
+        Aula aula = ServiceUtils.obtenerEntidadOException(aulaRepository,request.idAula(),Aula.class);
+
         log.info("Actualizando grupo con id: {}...",grupo.getId());
 
         validarFormatoPeriodo(request.periodo());
 
-        if (grupoRepository.existsByCursoIdAndMaestroIdAndAulaIdAndPeriodoAndIdNot(
-                request.idCurso(),
-                request.idMaestro(),
-                request.idAula(),
-                request.periodo(),
-                id))
-            throw new ConflictoException("Ya existe un grupo con la relación " +
-                    "combinación [Curso + Maestro + Aula + Periodo] y no puede haber " +
-                    "2 iguales.");
+        validarCambiosUnicos(request, id);
 
         grupo.actualizar(
-                cursoRepository.getById(request.idCurso()),
-                maestroRepository.getById(request.idMaestro()),
-                aulaRepository.getById(request.idAula()),
+                curso,
+                maestro,
+                aula,
                 request.periodo());
 
         grupoRepository.saveAndFlush(grupo);
@@ -142,5 +132,29 @@ public class GrupoServiceImpl implements GrupoService{
         if (!periodo.matches("^\\d{4}-(0[1-9]|1[0-2])$"))
             throw new ConflictoException("El periodo debe tener el formato {YYYY-MM}");
     }
+
+    private void validarCambiosUnicos(GrupoRequest request, Long idGrupo){
+         if(grupoRepository.existsByCursoIdAndMaestroIdAndAulaIdAndPeriodoAndIdNot(
+                request.idCurso(),
+                request.idMaestro(),
+                request.idAula(),
+                request.periodo(),
+                idGrupo))
+             throw new ConflictoException("Ya existe un grupo con la relación " +
+                     "combinación [Curso + Maestro + Aula + Periodo] y no puede haber " +
+                     "2 iguales.");
+    }
+
+    private void validarDatosUnicos(GrupoRequest request){
+         if(grupoRepository.existsByCursoIdAndMaestroIdAndAulaIdAndPeriodo(
+                request.idCurso(),
+                request.idMaestro(),
+                request.idAula(),
+                request.periodo()))
+             throw new ConflictoException("Ya existe un grupo con la relación " +
+                     "combinación [Curso + Maestro + Aula + Periodo] y no puede haber " +
+                     "2 iguales.");
+    }
+
 
 }

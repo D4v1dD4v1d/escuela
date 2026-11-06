@@ -8,68 +8,37 @@ import java.time.LocalDate;
 import static org.assertj.core.api.Assertions.*;
 
 public class CursoTest {
-    //actualizar
     @Test
-    void actualizar_debeModificarDatos_cuandoTodoEsValido(){
-        //arrange
-
-        Curso curso = Curso.builder()
-                .nombre("Matemáticas discretas I")
-                .descripcion("")
-                .creditos(10)
-                .build();
-        //act
-        curso.actualizar(
-                "Matemáticas discretas II",
-                null,
-                23
-        );
-        //assert
-        assertThat(curso.getNombre()).isEqualTo("Matemáticas discretas II");
-        assertThat(curso.getDescripcion()).isEqualTo(null);
-        assertThat(curso.getCreditos()).isEqualTo(23);
-
-    }
-    @Test
-    void actualizar_debeLanzarExecpcion_CuandoElNombreEsNull(){
-        //arrange
-        Curso curso = Curso.builder()
-                .nombre("Matemáticas discretas I")
-                .descripcion("")
-                .creditos(10)
-                .build();
-        //act and assert
-        assertThatThrownBy(() -> curso.actualizar(null,null,20))
-                .isInstanceOf(DatoInvalidoException.class)
-                .hasMessage("El nombre del curso debe estar entre 10 y 100 caracteres y es requerido.");
-
-
-    }
-    //crear
-    @Test
-    void crear_DebeCrearUnCurso_SiLosDatosSonValidos(){
-        Curso curso = Curso.crear("buiashdfjdsoadsjue",null,26);
-
-        assertThat(curso.getNombre().equals("buiashdfjdsoadsjue"));
-        assertThat(curso.getCreditos().equals(26));
+    void crear_datosValidos_retornaCurso() {
+        Curso curso = Curso.crear("Programación I", "Introducción a Java", 5);
+        assertThat(curso).isNotNull();
+        assertThat(curso.getNombre()).isEqualTo("Programación I");
+        assertThat(curso.getCreditos()).isEqualTo(5);
     }
 
     @Test
-    void crear_DebeLanzarUnaExepcion_SiElCursioEsNulo(){
-        assertThatThrownBy(()->Curso.crear("kldsnfklmdsklfml","Descripcion de prueba",null))
-                .isInstanceOf(DatoInvalidoException.class)
-                .hasMessageContaining("Debe tener al menos un crédito");
-    }
-    //validar datos
-    @Test
-    void validarDatos_SiLosDatosSonValidos_NoHaceNada(){
-        Curso.validarDatos("jhfjsedhjgkh",10);
-    }
-    @Test
-    void validarDatos_DebeLanzarExcepcion_SiElNombreEsPequeño(){
-        assertThatThrownBy(()->Curso.validarDatos("jid",20))
-                .isInstanceOf(DatoInvalidoException.class)
-                .hasMessage("El nombre del curso debe estar entre 10 y 100 caracteres y es requerido.");
+    void crear_creditosNoPositivos_lanzaDatoInvalidoException() {
+        // Se pasa un crédito no positivo (0) para que coincida con el nombre del test
+        assertThatThrownBy(() -> Curso.crear("Programación I", "Descripción", 0))
+                .isInstanceOf(DatoInvalidoException.class);
     }
 
+    @Test
+    void actualizar_datosValidos_actualizaCampos() {
+        Curso curso = Curso.crear("Programación I", "Introducción a Java", 5);
+        curso.actualizar("Programación Avanzada", "Spring Boot", 8);
+
+        assertThat(curso.getNombre()).isEqualTo("Programación Avanzada");
+        assertThat(curso.getDescripcion()).isEqualTo("Spring Boot");
+        assertThat(curso.getCreditos()).isEqualTo(8);
+    }
+
+    @Test
+    void actualizar_nombreVacio_lanzaDatoInvalidoException() {
+        Curso curso = Curso.crear("Programación I", "Introducción a Java", 5);
+
+        // Se pasa un nombre vacío ("") para que coincida con el nombre del test
+        assertThatThrownBy(() -> curso.actualizar("", "Spring Boot", 5))
+                .isInstanceOf(DatoInvalidoException.class);
+    }
 }

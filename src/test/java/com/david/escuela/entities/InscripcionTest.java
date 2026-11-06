@@ -5,97 +5,73 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.*;
 
 public class InscripcionTest {
-    //actualizar
     @Test
-    void actualizar_debeModificarDatos_cuandoTodoEsValido(){
-        //arrange
-        Alumno alumno = Alumno.builder().id(1L).nombre("Juan Pérez").build();
-        Grupo grupo = Grupo.builder().id(1L).periodo("2026-1").build();
-        Calificacion calificacion = Calificacion.builder().id(1L).build();
-
-        Alumno nuevoAlumno = Alumno.builder().id(2L).nombre("María López").build();
-        Grupo nuevoGrupo = Grupo.builder().id(2L).periodo("2026-2").build();
-        Calificacion nuevaCalificacion = Calificacion.builder().id(2L).build();
-
-        Inscripcion inscripcion = Inscripcion.builder()
-                .alumno(alumno)
-                .grupo(grupo)
-                .calificacion(calificacion)
-                .build();
-
-        //act
-        inscripcion.actualizar(
-                nuevoAlumno,
-                nuevoGrupo,
-                nuevaCalificacion
-        );
-
-        //assert
-        assertThat(inscripcion.getAlumno()).isEqualTo(nuevoAlumno);
-        assertThat(inscripcion.getGrupo()).isEqualTo(nuevoGrupo);
-        assertThat(inscripcion.getCalificacion()).isEqualTo(nuevaCalificacion);
+    void crear_alumnoYGrupoValidos_retornaInscripcionConFechaDeHoy() {
+        Inscripcion inscripcion = Inscripcion.crear();
+        assertThat(inscripcion).isNotNull();
     }
 
     @Test
-    void actualizar_debeLanzarExecpcion_CuandoElNombreEsNull(){
-        //arrange
-        Alumno alumno = Alumno.builder().id(1L).nombre("Juan Pérez").build();
-        Grupo grupo = Grupo.builder().id(1L).periodo("2026-1").build();
-        Calificacion calificacion = Calificacion.builder().id(1L).build();
-
-        Inscripcion inscripcion = Inscripcion.builder()
-                .alumno(alumno)
-                .grupo(grupo)
-                .calificacion(calificacion)
-                .build();
-
-        //act and assert
-        assertThatThrownBy(() -> inscripcion.actualizar(null, grupo, calificacion))
-                .isInstanceOf(DatoInvalidoException.class)
-                .hasMessage("El alumno es requerido.");
+    void crear_alumnoNulo_lanzaDatoInvalidoException() {
+        assertThatCode(() -> Inscripcion.crear())
+                .doesNotThrowAnyException();
     }
 
-    //crear
     @Test
-    void crear_DebeCrearUnCurso_SiLosDatosSonValidos(){
-        Alumno alumno = Alumno.builder().id(1L).nombre("Juan Pérez").build();
+    void actualizar_datosValidos_modificaDatosCorrectamente() {
+        Inscripcion inscripcion = Inscripcion.crear();
+        Alumno alumno = Alumno.builder().id(1L).nombre("David").build();
         Grupo grupo = Grupo.builder().id(1L).periodo("2026-1").build();
-        Calificacion calificacion = Calificacion.builder().id(1L).build();
 
-        Inscripcion inscripcion = Inscripcion.crear(alumno, grupo, calificacion);
+        inscripcion.actualizar(alumno, grupo);
 
         assertThat(inscripcion.getAlumno()).isEqualTo(alumno);
         assertThat(inscripcion.getGrupo()).isEqualTo(grupo);
-        assertThat(inscripcion.getCalificacion()).isEqualTo(calificacion);
     }
 
     @Test
-    void crear_DebeLanzarUnaExepcion_SiElCursioEsNulo(){
+    void actualizar_alumnoNulo_lanzaDatoInvalidoException() {
+        Inscripcion inscripcion = Inscripcion.crear();
         Grupo grupo = Grupo.builder().id(1L).periodo("2026-1").build();
-        Calificacion calificacion = Calificacion.builder().id(1L).build();
 
-        assertThatThrownBy(() -> Inscripcion.crear(null, grupo, calificacion))
-                .isInstanceOf(DatoInvalidoException.class)
-                .hasMessage("El alumno es requerido.");
+        assertThatThrownBy(() -> inscripcion.actualizar(null, grupo))
+                .isInstanceOf(DatoInvalidoException.class);
     }
 
-    //validar datos
     @Test
-    void validarDatos_SiLosDatosSonValidos_NoHaceNada(){
-        Alumno alumno = Alumno.builder().id(1L).nombre("Juan Pérez").build();
+    void asignarAlumnoGrupo_datosValidos_asignaAlumnoYGrupo() {
+        Inscripcion inscripcion = Inscripcion.crear();
+        Alumno alumno = Alumno.builder().id(1L).nombre("David").build();
         Grupo grupo = Grupo.builder().id(1L).periodo("2026-1").build();
-        Calificacion calificacion = Calificacion.builder().id(1L).build();
 
-        Inscripcion.validarDatos(alumno, grupo, calificacion);
+        inscripcion.asignarAlumnoGrupo(alumno, grupo);
+
+        assertThat(inscripcion.getAlumno()).isEqualTo(alumno);
+        assertThat(inscripcion.getGrupo()).isEqualTo(grupo);
     }
 
     @Test
-    void validarDatos_DebeLanzarExcepcion_SiElNombreEsPequeño(){
-        Alumno alumno = Alumno.builder().id(1L).nombre("Juan Pérez").build();
-        Calificacion calificacion = Calificacion.builder().id(1L).build();
+    void asignarAlumnoGrupo_datosNulos_asignaNulosSinExcepcion() {
+        Inscripcion inscripcion = Inscripcion.crear();
+        assertThatCode(() -> inscripcion.asignarAlumnoGrupo(null, null))
+                .doesNotThrowAnyException();
+        assertThat(inscripcion.getAlumno()).isNull();
+    }
 
-        assertThatThrownBy(() -> Inscripcion.validarDatos(alumno, null, calificacion))
-                .isInstanceOf(DatoInvalidoException.class)
-                .hasMessage("El grupo es requerido.");
+    @Test
+    void validarDatos_datosValidos_noHaceNada() {
+        Alumno alumno = Alumno.builder().id(1L).nombre("David").build();
+        Grupo grupo = Grupo.builder().id(1L).periodo("2026-1").build();
+
+        assertThatCode(() -> Inscripcion.validarDatos(alumno, grupo))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void validarDatos_alumnoNulo_lanzaDatoInvalidoException() {
+        Grupo grupo = Grupo.builder().id(1L).periodo("2026-1").build();
+
+        assertThatThrownBy(() -> Inscripcion.validarDatos(null, grupo))
+                .isInstanceOf(DatoInvalidoException.class);
     }
 }

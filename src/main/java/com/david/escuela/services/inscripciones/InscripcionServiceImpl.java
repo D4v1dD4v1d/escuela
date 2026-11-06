@@ -55,8 +55,7 @@ public class InscripcionServiceImpl implements InscripcionService{
 
         Grupo grupo = ServiceUtils.obtenerEntidadOException(grupoReposiroty,request.idGrupo(), Grupo.class);
 
-        if (inscripcionRepository.existsByGrupoIdAndAlumnoId(request.idGrupo(),request.idAlumno()))
-            throw new ConflictoException("El alumno ya tiene una inscripción en este grupo.");
+        validarDatosUnicos(request);
 
         Inscripcion inscripcion = inscripcionMapper.requestAEntidad(request,alumno,grupo);
 
@@ -74,8 +73,7 @@ public class InscripcionServiceImpl implements InscripcionService{
 
         Grupo grupo = ServiceUtils.obtenerEntidadOException(grupoReposiroty,request.idGrupo(), Grupo.class);
 
-        if (inscripcionRepository.existsByGrupoIdAndAlumnoIdAndIdNot(request.idGrupo(),request.idAlumno(),id))
-            throw new ConflictoException("El alumno ya tiene una inscripción en este grupo.");
+        validarCambiosUnicos(request,id);
 
         inscripcion.actualizar(alumno,grupo);
 
@@ -98,7 +96,16 @@ public class InscripcionServiceImpl implements InscripcionService{
 
     private Inscripcion obtenerInscripcion(Long id){
         log.info("Obteniendo inscripción...");
-        return inscripcionRepository.getById(id);
+        return ServiceUtils.obtenerEntidadOException(inscripcionRepository,id,Inscripcion.class);
+    }
+
+    private void validarDatosUnicos(InscripcionRequest request){
+        if (inscripcionRepository.existsByGrupoIdAndAlumnoId(request.idGrupo(),request.idAlumno()))
+            throw new ConflictoException("El alumno ya tiene una inscripción en este grupo.");
+    }
+    private void validarCambiosUnicos(InscripcionRequest request,Long id){
+        if (inscripcionRepository.existsByGrupoIdAndAlumnoIdAndIdNot(request.idGrupo(),request.idAlumno(),id))
+            throw new ConflictoException("El alumno ya tiene una inscripción en este grupo.");
     }
 
 

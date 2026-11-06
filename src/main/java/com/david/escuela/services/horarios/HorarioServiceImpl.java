@@ -10,6 +10,7 @@ import com.david.escuela.mappers.HorarioMapper;
 import com.david.escuela.repositories.GrupoReposiroty;
 import com.david.escuela.repositories.HorarioRepository;
 import com.david.escuela.utils.ServiceUtils;
+import com.david.escuela.utils.StringCustomUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -53,19 +54,10 @@ public class HorarioServiceImpl implements HorarioService{
         log.info("Registrando horario...");
         Grupo grupo = ServiceUtils.obtenerEntidadOException(grupoReposiroty,request.idGrupo(),Grupo.class);
 
-        List <String> lista = horarioRepository.buscarHorariosFormateados(
-                request.horaInicio(),
-                request.horaFin(),
-                request.dia(),
-                request.idGrupo(),
-                grupo.getAula().getId(),
-                grupo.getPeriodo());
-        log.info("Resultado: {}",lista.size());
 
-        if (!lista.isEmpty())
-            throw new ConflictoException("Ese horario ya esta ocupado, seleccione otro.");
+        Horario horario = horarioMapper.requestAEntidad(request,grupo);
 
-        Horario horario =horarioMapper.requestAEntidad(request,grupo);
+        validarTraslapes(horario,null);
 
         horarioRepository.saveAndFlush(horario);
 
@@ -85,25 +77,13 @@ public class HorarioServiceImpl implements HorarioService{
 
         validarFormatoHorario(request.horaFin());
         validarFormatoHorario(request.horaInicio());
+
         validarInicioMenorQueFin(request.horaInicio(),request.horaFin());
 
         Grupo grupo = grupoReposiroty.findById(request.idGrupo()).
                 orElseThrow(() ->new ConflictoException("El Grupo con id: "+ request.idGrupo()+" no existe."));
 
-        List<String> lista = horarioRepository.buscarHorariosFormateados(
-                request.horaInicio(),
-                request.horaFin(),
-                request.idGrupo(),
-                grupo.getAula().getId(),
-                id,
-                grupo.getPeriodo(),
-                request.dia()
-
-        );
-
-
-        if (!lista.isEmpty())
-            throw new ConflictoException("Ese horario ya esta ocupado, seleccione otro.");
+        validarTraslapes(horario,id);
 
         horario.actualizar(
                 grupo,
@@ -148,5 +128,30 @@ public class HorarioServiceImpl implements HorarioService{
             throw new ConflictoException("La hora es requerida");
         if (!hora.matches("^([01]\\d|2[0-3]):([0-5]\\d)$"))
             throw new ConflictoException("La hora debe tener el formato HH-MM");
+    }
+
+    private void validarTraslapes(Horario actual, Long idExcluido) {
+        Grupo grupo = actual.getGrupo();
+        log.info("Dia semana {}", actual.getDiaSemana().toString());
+        if (horarioRepository.existeTraslapePorGrupo(
+                grupo.getId(),
+                actual.getDiaSemana(),
+                actual.getHoraInicio(),
+                actual.getHoraFin(),
+                idExcluido)) {
+            throw new ConflictoException("El grupo ya tiene un horario traslapado");
+        }
+
+        if (horarioRepository.existeTraslapePorAula(
+                grupo.getAula().getId(),
+                grupo.getPeriodo(),
+                grupo.getId(),
+                actual.getDiaSemana(),
+                actual.getHoraInicio(),
+                actual.getHoraFin(),
+                idExcluido)) {
+            throw new ConflictoException(
+                    "El aula ya está ocupada en ese día y horario para el período");
+        }
     }
 }

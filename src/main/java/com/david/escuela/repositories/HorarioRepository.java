@@ -1,6 +1,7 @@
 package com.david.escuela.repositories;
 
 import com.david.escuela.entities.Horario;
+import com.david.escuela.enums.DiaSemana;
 import org.apache.catalina.LifecycleState;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,79 +13,45 @@ import java.util.List;
 @Repository
 public interface HorarioRepository extends JpaRepository<Horario,Long> {
     boolean existsByGrupoId(Long Id);
-    // para registrar
-    @Query(value = """
-    SELECT 'CONFLICTO: El grupo ya tiene un horario asignado en ese intervalo.'
-    FROM GRUPOS G
-    INNER JOIN HORARIOS H
-        ON G.ID_GRUPO = H.ID_GRUPO
-    WHERE
-        G.ID_GRUPO = :idGrupo
-        AND G.PERIODO = :periodo
-        AND UPPER(TRIM(H.DIA)) = UPPER(TRIM(:dia))
-        AND H.HORA_INICIO < :fin
-        AND H.HORA_FIN > :inicio
 
-    UNION ALL
-
-    SELECT 'CONFLICTO: El aula ya está ocupada en ese intervalo.'
-    FROM GRUPOS G
-    INNER JOIN HORARIOS H
-        ON G.ID_GRUPO = H.ID_GRUPO
-    WHERE
-        G.ID_AULA = :idAula
-        AND G.PERIODO = :periodo
-        AND G.ID_GRUPO <> :idGrupo
-        AND UPPER(TRIM(H.DIA)) = UPPER(TRIM(:dia))
-        AND H.HORA_INICIO < :fin
-        AND H.HORA_FIN > :inicio
-    """, nativeQuery = true)
-    List<String> buscarHorariosFormateados(
-            @Param("inicio") String inicio,
-            @Param("fin") String fin,
-            @Param("dia") String dia,
+    @Query("""
+            SELECT CASE WHEN COUNT(h) > 0 THEN true ELSE false END
+                    FROM Horario h
+                    WHERE h.grupo.id = :idGrupo
+                      AND h.diaSemana = :dia
+                      AND h.horaInicio < :horaFin
+                      AND h.horaFin > :horaInicio
+                      AND (:idExcluido IS NULL OR h.id <> :idExcluido)
+            """)
+    boolean existeTraslapePorGrupo(
             @Param("idGrupo") Long idGrupo,
-            @Param("idAula") Long idAula,
-            @Param("periodo") String periodo
+            @Param("dia") DiaSemana dia,
+            @Param("horaInicio") String horaInicio,
+            @Param("horaFin") String horaFin,
+            @Param("idExcluido") Long idExcluido
     );
 
-
-
-    //para actualizar
-    @Query(value = """
-    SELECT 'CONFLICTO: El grupo ya tiene un horario asignado en ese intervalo.'
-    FROM GRUPOS G
-    INNER JOIN HORARIOS H
-        ON G.ID_GRUPO = H.ID_GRUPO
-    WHERE
-        G.ID_GRUPO = :idGrupo
-        AND G.PERIODO = :periodo
-        AND UPPER(TRIM(H.DIA)) = UPPER(TRIM(:dia))
-        AND H.ID_HORARIO <> :idHorario
-        AND H.HORA_INICIO < :fin
-        AND H.HORA_FIN > :inicio
-
-    UNION ALL
-
-    SELECT 'CONFLICTO: El aula ya está ocupada en ese intervalo.'
-    FROM GRUPOS G
-    INNER JOIN HORARIOS H
-        ON G.ID_GRUPO = H.ID_GRUPO
-    WHERE
-        G.ID_AULA = :idAula
-        AND G.PERIODO = :periodo
-        AND H.ID_HORARIO <> :idHorario
-        AND UPPER(TRIM(H.DIA)) = UPPER(TRIM(:dia))
-        AND H.HORA_INICIO < :fin
-        AND H.HORA_FIN > :inicio
-    """, nativeQuery = true)
-    List<String> buscarHorariosFormateados(
-            @Param("inicio") String inicio,
-            @Param("fin") String fin,
-            @Param("idGrupo") Long idGrupo,
+    @Query("""
+            SELECT CASE WHEN COUNT(h) > 0 THEN true ELSE false END
+                    FROM Horario h
+                    WHERE h.grupo.aula.id = :idAula
+                      AND h.grupo.periodo = :periodo
+                      AND h.grupo.id <> :idGrupo
+                      AND h.diaSemana = :dia
+                      AND h.horaInicio < :horaFin
+                      AND h.horaFin > :horaInicio
+                      AND (:idExcluido IS NULL OR h.id <> :idExcluido)
+            """)
+    boolean existeTraslapePorAula(
             @Param("idAula") Long idAula,
-            @Param("idHorario") Long idHorario,
             @Param("periodo") String periodo,
-            @Param("dia") String dia
+            @Param("idGrupo") Long idGrupo,
+            @Param("dia") DiaSemana dia,
+            @Param("horaInicio") String horaInicio,
+            @Param("horaFin") String horaFin,
+            @Param("idExcluido") Long idExcluido
     );
+
+
+
 }

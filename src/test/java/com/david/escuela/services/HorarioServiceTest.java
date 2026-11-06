@@ -65,7 +65,6 @@ class HorarioServiceTest {
 
         // Assert
         assertThat(resultado).isNotNull();
-        verify(horarioRepository).buscarHorariosFormateados("08:00","10:00","Lunes",2L,1L,"2026-02");
         verify(horarioRepository).saveAndFlush(any(Horario.class));
     }
 

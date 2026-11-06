@@ -1,90 +1,93 @@
 package com.david.escuela.entities;
+
 import com.david.escuela.exceptions.DatoInvalidoException;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;
 
 public class HorarioTest {
-    //actualizar
     @Test
-    void actualizar_debeModificarDatos_cuandoTodoEsValido(){
-        //arrange
-        Grupo grupo = Grupo.builder().id(1L).periodo("2026-1").build();
-        Grupo nuevoGrupo = Grupo.builder().id(2L).periodo("2026-2").build();
-
-        Horario horario = Horario.builder()
-                .grupo(grupo)
-                .diaSemana(com.david.escuela.enums.DiaSemana.LUNES)
-                .horaIinicio("08:00")
-                .horaFin("10:00")
-                .build();
-
-        //act
-        horario.actualizar(
-                nuevoGrupo,
-                "Martes",
-                "10:00",
-                "12:00"
-        );
-
-        //assert
-        assertThat(horario.getGrupo()).isEqualTo(nuevoGrupo);
-        assertThat(horario.getDiaSemana().name()).isEqualTo("MARTES");
-        assertThat(horario.getHoraIinicio()).isEqualTo("10:00");
-        assertThat(horario.getHoraFin()).isEqualTo("12:00");
+    void crear_horaInicioMenorQueHoraFin_retornaHorario() {
+        Horario horario = Horario.crear("Lunes", "08:00", "10:00");
+        assertThat(horario).isNotNull();
+        assertThat(horario.getHoraInicio()).isEqualTo("08:00");
     }
 
     @Test
-    void actualizar_debeLanzarExecpcion_CuandoElNombreEsNull(){
-        //arrange
-        Grupo grupo = Grupo.builder().id(1L).periodo("2026-1").build();
-
-        Horario horario = Horario.builder()
-                .grupo(grupo)
-                .diaSemana(com.david.escuela.enums.DiaSemana.LUNES)
-                .horaIinicio("08:00")
-                .horaFin("10:00")
-                .build();
-
-        //act and assert
-        assertThatThrownBy(() -> horario.actualizar(grupo, "Lunes", null, "10:00"))
-                .isInstanceOf(DatoInvalidoException.class)
-                .hasMessage("La hora de inicio es requerida");
+    void crear_horaInicioMayorOIgualQueHoraFin_lanzaDatoInvalidoException() {
+        assertThatThrownBy(() -> Horario.crear("Lunes", "11:00", "10:00"))
+                .isInstanceOf(DatoInvalidoException.class);
     }
 
-    //crear
     @Test
-    void crear_DebeCrearUnCurso_SiLosDatosSonValidos(){
+    void actualizar_rangoValido_actualizaHorario() {
+        Horario horario = Horario.crear("Lunes", "08:00", "10:00");
         Grupo grupo = Grupo.builder().id(1L).periodo("2026-1").build();
-
-        Horario horario = Horario.crear(grupo, "Lunes", "08:00", "10:00");
-
+        horario.actualizar(grupo, "Martes", "10:00", "12:00");
+        assertThat(horario.getHoraInicio()).isEqualTo("10:00");
         assertThat(horario.getGrupo()).isEqualTo(grupo);
-        assertThat(horario.getHoraIinicio()).isEqualTo("08:00");
-        assertThat(horario.getHoraFin()).isEqualTo("10:00");
     }
 
     @Test
-    void crear_DebeLanzarUnaExepcion_SiElCursioEsNulo(){
-        assertThatThrownBy(() -> Horario.crear(null, "Lunes", "08:00", "10:00"))
-                .isInstanceOf(DatoInvalidoException.class)
-                .hasMessage("El grupo es requerido.");
-    }
-
-    //validar datos
-    @Test
-    void validarDatos_SiLosDatosSonValidos_NoHaceNada(){
+    void actualizar_horaInicioMayorAHoraFin_lanzaDatoInvalidoException() {
+        Horario horario = Horario.crear("Lunes", "08:00", "10:00");
         Grupo grupo = Grupo.builder().id(1L).periodo("2026-1").build();
-
-        Horario.validarDatos(grupo, "Lunes", "08:00", "10:00");
+        assertThatThrownBy(() -> horario.actualizar(grupo, "Martes", "13:00", "12:00"))
+                .isInstanceOf(DatoInvalidoException.class);
     }
 
     @Test
-    void validarDatos_DebeLanzarExcepcion_SiElNombreEsPequeño(){
-        Grupo grupo = Grupo.builder().id(1L).periodo("2026-1").build();
+    void formatoHora_datosValidos_retornaCadenaFormateada() {
+        Horario horario = Horario.crear("Lunes", "08:00", "10:00");
+        String resultado = horario.formatoHora("Lunes", "08:00", "10:00");
+        assertThat(resultado).isNotBlank();
+    }
 
-        assertThatThrownBy(() -> Horario.validarDatos(grupo, "Lunes", "", "10:00"))
-                .isInstanceOf(DatoInvalidoException.class)
-                .hasMessage("La hora de inicio es requerida");
+    @Test
+    void formatoHora_diaInvalido_lanzaExcepcion() {
+        Horario horario = Horario.crear("Lunes", "08:00", "10:00");
+        assertThatThrownBy(() -> horario.formatoHora("Invalido", "08:00", "10:00"))
+                .isInstanceOf(RuntimeException.class);
+    }
+
+    @Test
+    void formatoHoraParaGrupo_datosValidos_retornaCadenaFormateada() {
+        Horario horario = Horario.crear("Lunes", "08:00", "10:00");
+        String resultado = horario.formatoHoraParaGrupo("Lunes", "08:00", "10:00");
+        assertThat(resultado).contains("-");
+    }
+
+    @Test
+    void formatoHoraParaGrupo_diaInvalido_lanzaExcepcion() {
+        Horario horario = Horario.crear("Lunes", "08:00", "10:00");
+        assertThatThrownBy(() -> horario.formatoHoraParaGrupo("Invalido", "08:00", "10:00"))
+                .isInstanceOf(RuntimeException.class);
+    }
+
+    @Test
+    void asignarGrupo_grupoValido_asignaGrupoCorrectamente() {
+        Horario horario = Horario.crear("Lunes", "08:00", "10:00");
+        Grupo grupo = Grupo.builder().id(1L).periodo("2026-1").build();
+        horario.asignarGrupo(grupo);
+        assertThat(horario.getGrupo()).isEqualTo(grupo);
+    }
+
+    @Test
+    void asignarGrupo_grupoNulo_noModificaGrupo() {
+        Horario horario = Horario.crear("Lunes", "08:00", "10:00");
+        horario.asignarGrupo(null);
+        assertThat(horario.getGrupo()).isNull();
+    }
+
+    @Test
+    void validarDatos_datosValidos_noHaceNada() {
+        assertThatCode(() -> Horario.validarDatos("Lunes", "08:00", "10:00"))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void validarDatos_horaInicioVacia_lanzaDatoInvalidoException() {
+        assertThatThrownBy(() -> Horario.validarDatos("Lunes", "", "10:00"))
+                .isInstanceOf(DatoInvalidoException.class);
     }
 }

@@ -88,15 +88,6 @@ public class Alumno {
 
     }
 
-    public void inscribir(Inscripcion inscripcion){
-        if (inscripcion== null)
-            throw new DatoInvalidoException("La inscripción es requerida.");
-
-        this.inscripciones.add(inscripcion);
-
-        inscripcion.inscribirAlumno(this);
-    }
-
 
 
     public void asignarDatosAcademicos(String email, String matricula){

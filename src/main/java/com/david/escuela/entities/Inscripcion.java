@@ -39,11 +39,6 @@ public class Inscripcion {
     @OneToOne(mappedBy = "inscripcion")
     private Calificacion calificacion;
 
-    public void inscribirAlumno(Alumno alumno){
-        if (alumno==null)
-            throw new DatoInvalidoException("El alumno es requerido.");
-        this.alumno=alumno;
-    }
 
     public static void validarDatos(Alumno alumno,Grupo grupo){
         if(alumno==null)

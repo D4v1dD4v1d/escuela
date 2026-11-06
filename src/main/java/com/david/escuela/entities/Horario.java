@@ -11,6 +11,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalTime;
+
 @Entity
 @Table(name = "HORARIOS")
 @NoArgsConstructor
@@ -37,8 +39,16 @@ public class Horario {
     @Column(name = "HORA_FIN", nullable = false,length = 5)
     private String horaFin;
 
-    public static void validarDatos(String diaSemana, String horaIinicio, String horaFin){
-        StringCustomUtils.validarNoVacio(horaIinicio,"La hora de inicio es requerida");
+    private static void validarCongruenciaHoras(String horaInicio, String horaFin){
+        LocalTime inicio = LocalTime.parse(horaInicio);
+        LocalTime fin = LocalTime.parse(horaFin);
+        if (!inicio.isBefore(fin))
+            throw new DatoInvalidoException("La hora de inicio debe ser menor que la hora de fin.");
+    }
+
+    public static void validarDatos(String diaSemana, String horaInicio, String horaFin){
+        validarCongruenciaHoras(horaInicio,horaFin);
+        StringCustomUtils.validarNoVacio(horaInicio,"La hora de inicio es requerida");
         StringCustomUtils.validarNoVacio(horaFin,"La hora de fin es requerida");
         DiaSemana.obteterDiaSemanaPorDescripcion(diaSemana);
     }

@@ -47,29 +47,28 @@ public class CalificacionTest {
     //crear
     @Test
     void crear_DebeCrearUnAula_SiLosDatosSonValidos(){
-        Inscripcion inscripcion =new Inscripcion();
-        Calificacion calificacion = Calificacion.crear(BigDecimal.valueOf(5.6),inscripcion);
+        Calificacion calificacion = Calificacion.crear(BigDecimal.valueOf(5.6));
 
         assertThat(calificacion.getCalificacion().equals(BigDecimal.valueOf(5.6)));
-        assertThat(calificacion.getInscripcion().equals(inscripcion));
+
 
     }
 
     @Test
     void crear_DebeLanzarUnaExepcion_SiLaCalificacionEsNegativa(){
         Inscripcion inscripcion =new Inscripcion();
-        assertThatThrownBy(()->Calificacion.crear(BigDecimal.valueOf(-3.2),inscripcion))
+        assertThatThrownBy(()->Calificacion.crear(BigDecimal.valueOf(-3.2)))
                 .isInstanceOf(DatoInvalidoException.class)
                 .hasMessageContaining("La calificación es requerida y debe ser positiva");
     }
     //validar datos
     @Test
     void validarDatos_SiLosDatosSonValidos_NoHaceNada(){
-       Calificacion.validarDatos(BigDecimal.valueOf(2.3),new Inscripcion());
+       Calificacion.validarDatos(BigDecimal.valueOf(2.3));
     }
 
     void validarDatos_DebeLanzarExcepcion_SiLaCalificacionEsNula(){
-        assertThatThrownBy(()->Calificacion.validarDatos(null,new Inscripcion()))
+        assertThatThrownBy(()->Calificacion.validarDatos(null))
                 .isInstanceOf(DatoInvalidoException.class)
                 .hasMessage("La calificación es requerida y debe ser positiva");
     }

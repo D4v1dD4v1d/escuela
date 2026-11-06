@@ -2,8 +2,10 @@ package com.david.escuela.services.calificaciones;
 
 import com.david.escuela.dto.calificaciones.CalificacionRequest;
 import com.david.escuela.dto.calificaciones.CalificacionResponse;
+import com.david.escuela.dto.inscripciones.InscripcionRequest;
 import com.david.escuela.entities.Calificacion;
 import com.david.escuela.entities.Inscripcion;
+import com.david.escuela.exceptions.ConflictoException;
 import com.david.escuela.exceptions.EntidadRelacionada;
 import com.david.escuela.mappers.CalificacionMapper;
 import com.david.escuela.repositories.CalificacionRepository;
@@ -44,12 +46,11 @@ public class CalificacionServiceImpl implements CalificacionService{
 
     @Override
     public CalificacionResponse registrar(CalificacionRequest request) {
-        if(calificacionRepository.existsByInscripcionId(request.idInscripcion()))
-            throw new EntidadRelacionada("La inscripción que intentas calificar ya cuenta con una calificación.");
+        validarDatosUnicos(request);
 
         log.info("Registrando calificación...");
 
-        Inscripcion inscripcion =inscripcionRepository.getById(request.idInscripcion());
+        Inscripcion inscripcion =ServiceUtils.obtenerEntidadOException(inscripcionRepository,request.idInscripcion(), Inscripcion.class);
 
         Calificacion calificacion = calificacionMapper.requestAEntidad(request,inscripcion);
 
@@ -64,10 +65,10 @@ public class CalificacionServiceImpl implements CalificacionService{
     public CalificacionResponse actualizar(CalificacionRequest request, Long id) {
         Calificacion calificacion = obtenerCalificacion(id);
         log.info("Actualizando calificación...");
-        if(calificacionRepository.existsByInscripcionIdAndIdNot(request.idInscripcion(),id))
-            throw new EntidadRelacionada("La inscripción que intentas calificar ya cuenta con una calificación.");
 
-        Inscripcion inscripcion = inscripcionRepository.getById(request.idInscripcion());
+        validarCambiosUnicos(request,id);
+
+        Inscripcion inscripcion = ServiceUtils.obtenerEntidadOException(inscripcionRepository,id, Inscripcion.class);
 
         calificacion.actualizar(request.calificacion(),inscripcion);
 
@@ -93,5 +94,13 @@ public class CalificacionServiceImpl implements CalificacionService{
     private Calificacion obtenerCalificacion(Long id){
         log.info("Obteniendo calificacion...");
         return ServiceUtils.obtenerEntidadOException(calificacionRepository,id,Calificacion.class);
+    }
+    private void validarDatosUnicos(CalificacionRequest request){
+        if (calificacionRepository.existsByInscripcionId(request.idInscripcion()))
+            throw new ConflictoException("El alumno ya tiene una inscripción en este grupo.");
+    }
+    private void validarCambiosUnicos(CalificacionRequest request,Long id){
+        if (calificacionRepository.existsByInscripcionIdAndIdNot(request.idInscripcion(),id))
+            throw new ConflictoException("El alumno ya tiene una inscripción en este grupo.");
     }
 }

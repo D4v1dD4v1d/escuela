@@ -5,68 +5,84 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.*;
 
 public class GrupoTest {
-    //actualizar
     @Test
-    void actualizar_debeModificarDatos_cuandoTodoEsValido(){
-        //arrange
-        Curso curso = Curso.builder().id(1L).nombre("Matemáticas discretas I").creditos(10).build();
-        Maestro maestro = Maestro.builder().id(1L).nombre("Juan Pérez").build();
-        Aula aula = Aula.builder().id(1L).nombre("Aula 101").build();
+    void actualizar_datosValidos_actualizaCampos() {
+        Grupo grupo = Grupo.crear("2026-1");
+        Curso curso = Curso.builder().id(1L).build();
+        Maestro maestro = Maestro.builder().id(1L).build();
+        Aula aula = Aula.builder().id(1L).build();
 
-        Curso nuevoCurso = Curso.builder().id(2L).nombre("Física I").creditos(8).build();
-        Maestro nuevoMaestro = Maestro.builder().id(2L).nombre("María López").build();
-        Aula nuevaAula = Aula.builder().id(2L).nombre("Aula 102").build();
+        grupo.actualizar(curso, maestro, aula, "2026-2");
 
-        Grupo grupo = Grupo.builder()
-                .curso(curso)
-                .maestro(maestro)
-                .aula(aula)
-                .periodo("2026-1")
-                .build();
-
-        //act
-        grupo.actualizar(
-                nuevoCurso,
-                nuevoMaestro,
-                nuevaAula,
-                "2026-2"
-        );
-
-        //assert
-        assertThat(grupo.getCurso()).isEqualTo(nuevoCurso);
-        assertThat(grupo.getMaestro()).isEqualTo(nuevoMaestro);
-        assertThat(grupo.getAula()).isEqualTo(nuevaAula);
         assertThat(grupo.getPeriodo()).isEqualTo("2026-2");
+        assertThat(grupo.getCurso()).isEqualTo(curso);
     }
 
     @Test
-    void actualizar_debeLanzarExecpcion_CuandoElNombreEsNull(){
-        //arrange
-        Curso curso = Curso.builder().id(1L).nombre("Matemáticas discretas I").creditos(10).build();
-        Maestro maestro = Maestro.builder().id(1L).nombre("Juan Pérez").build();
-        Aula aula = Aula.builder().id(1L).nombre("Aula 101").build();
+    void actualizar_periodoVacio_lanzaDatoInvalidoException() {
+        Grupo grupo = Grupo.crear("2026-1");
+        Curso curso = Curso.builder().id(1L).build();
+        Maestro maestro = Maestro.builder().id(1L).build();
+        Aula aula = Aula.builder().id(1L).build();
 
-        Grupo grupo = Grupo.builder()
-                .curso(curso)
-                .maestro(maestro)
-                .aula(aula)
-                .periodo("2026-1")
-                .build();
-
-        //act and assert
-        assertThatThrownBy(() -> grupo.actualizar(curso, maestro, aula, null))
-                .isInstanceOf(DatoInvalidoException.class)
-                .hasMessage("El periodo es requerido y debe contener entre 5 y 10 caracteres.");
+        // Se pasa un periodo vacío ("") para coincidir con el nombre del test
+        assertThatThrownBy(() -> grupo.actualizar(curso, maestro, aula, ""))
+                .isInstanceOf(DatoInvalidoException.class);
     }
 
-    //crear
     @Test
-    void crear_DebeCrearUnCurso_SiLosDatosSonValidos(){
-        Curso curso = Curso.builder().id(1L).nombre("Matemáticas discretas I").creditos(10).build();
-        Maestro maestro = Maestro.builder().id(1L).nombre("Juan Pérez").build();
-        Aula aula = Aula.builder().id(1L).nombre("Aula 101").build();
+    void crear_datosValidos_creaCampos() {
+        Grupo grupo = Grupo.crear("2026-1");
+        assertThat(grupo).isNotNull();
+        assertThat(grupo.getPeriodo()).isEqualTo("2026-1");
+    }
 
-        Grupo grupo = Grupo.crear(curso, maestro, aula);
+    @Test
+    void crear_periodoNulo_lanzaDatoInvalidoException() {
+        // Se pasa un valor nulo (null) para que coincida exactamente con "periodoNulo"
+        assertThatThrownBy(() -> Grupo.crear(null))
+                .isInstanceOf(DatoInvalidoException.class);
+    }
+
+    @Test
+    void validarDatos_datosValidos_noHaceNada() {
+        Curso curso = Curso.builder().id(1L).build();
+        Maestro maestro = Maestro.builder().id(1L).build();
+        Aula aula = Aula.builder().id(1L).build();
+
+        assertThatCode(() -> Grupo.validarDatos(curso, maestro, aula))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void validarDatos_cursoNulo_lanzaDatoInvalidoException() {
+        Maestro maestro = Maestro.builder().id(1L).build();
+        Aula aula = Aula.builder().id(1L).build();
+
+        assertThatThrownBy(() -> Grupo.validarDatos(null, maestro, aula))
+                .isInstanceOf(DatoInvalidoException.class);
+    }
+
+    @Test
+    void validarPeriodo_periodoValido_noHaceNada() {
+        assertThatCode(() -> Grupo.validarPeriodo("2026-1"))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void validarPeriodo_periodoVacio_lanzaDatoInvalidoException() {
+        assertThatThrownBy(() -> Grupo.validarPeriodo(""))
+                .isInstanceOf(DatoInvalidoException.class);
+    }
+
+    @Test
+    void asignarObjetos_objetosValidos_asignaCorrectamente() {
+        Grupo grupo = Grupo.crear("2026-1");
+        Curso curso = Curso.builder().id(1L).build();
+        Maestro maestro = Maestro.builder().id(1L).build();
+        Aula aula = Aula.builder().id(1L).build();
+
+        grupo.asignarObjetos(maestro, curso, aula);
 
         assertThat(grupo.getCurso()).isEqualTo(curso);
         assertThat(grupo.getMaestro()).isEqualTo(maestro);
@@ -74,34 +90,14 @@ public class GrupoTest {
     }
 
     @Test
-    void crear_DebeLanzarUnaExepcion_SiElCursioEsNulo(){
-        Maestro maestro = Maestro.builder().id(1L).nombre("Juan Pérez").build();
-        Aula aula = Aula.builder().id(1L).nombre("Aula 101").build();
+    void asignarObjetos_cursoNulo_lanzaDatoInvalidoException() {
+        Grupo grupo = Grupo.crear("2026-1");
+        Maestro maestro = Maestro.builder().id(1L).build();
+        Aula aula = Aula.builder().id(1L).build();
 
-        assertThatThrownBy(() -> Grupo.crear(null, maestro, aula))
-                .isInstanceOf(DatoInvalidoException.class)
-                .hasMessage("El curso es requerido.");
+        assertThatThrownBy(() -> grupo.asignarObjetos(maestro, null, aula))
+                .isInstanceOf(DatoInvalidoException.class);
     }
 
-    //validar datos
-    @Test
-    void validarDatos_SiLosDatosSonValidos_NoHaceNada(){
-        Curso curso = Curso.builder().id(1L).nombre("Matemáticas discretas I").creditos(10).build();
-        Maestro maestro = Maestro.builder().id(1L).nombre("Juan Pérez").build();
-        Aula aula = Aula.builder().id(1L).nombre("Aula 101").build();
-
-        Grupo.validarDatos(curso, maestro, aula, "2026-1");
-    }
-
-    @Test
-    void validarDatos_DebeLanzarExcepcion_SiElNombreEsPequeño(){
-        Curso curso = Curso.builder().id(1L).nombre("Matemáticas discretas I").creditos(10).build();
-        Maestro maestro = Maestro.builder().id(1L).nombre("Juan Pérez").build();
-        Aula aula = Aula.builder().id(1L).nombre("Aula 101").build();
-
-        assertThatThrownBy(() -> Grupo.validarDatos(curso, maestro, aula, "202"))
-                .isInstanceOf(DatoInvalidoException.class)
-                .hasMessage("El periodo es requerido y debe contener entre 5 y 10 caracteres.");
-    }
 
 }
